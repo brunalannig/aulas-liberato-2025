@@ -1,3 +1,5 @@
+-- ANOTACOES NO CADERNO.
+
 --1. Listar o nome de todos os clientes usando o cursor.
 DECLARE
 	CURSOR c_cliente is

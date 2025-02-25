@@ -1,0 +1,74 @@
+--1. Listar o nome de todos os clientes usando o cursor.
+DECLARE
+	CURSOR c_cliente is
+	select nome
+	from cliente;
+	r_cliente c_cliente%ROWTYPE;
+
+BEGIN
+	OPEN c_cliente;
+	loop
+	fetch c_cliente into r_cliente;
+	exit when c_cliente%NOTFOUND;
+	DBMS_OUTPUT.PUT_LINE(r_cliente.nome);
+	end loop;
+	close c_cliente;
+END;
+
+-- 2. Altere o exercicio 1 e moste alem do nome do cliente, o codigo do pedido e o valor do pedido do cliente.
+DECLARE
+	CURSOR c_cliente_pedido is
+	select cliente.nome, pedido.cod_pedido, pedido.vlr_pedido
+	from cliente, pedido
+    where cliente.cod_cli = pedido.cod_cli
+    order by cliente.nome, pedido.cod_pedido, pedido.vlr_pedido;
+	r_cliente_pedido c_cliente_pedido%ROWTYPE;
+
+BEGIN
+	OPEN c_cliente_pedido;
+	loop
+	fetch c_cliente_pedido into r_cliente_pedido;
+	exit when c_cliente_pedido%NOTFOUND;
+	DBMS_OUTPUT.PUT_LINE(r_cliente_pedido.nome ||' '|| r_cliente_pedido.cod_pedido ||' '|| r_cliente_pedido.vlr_pedido);
+	end loop;
+	close c_cliente_pedido;
+END;
+
+--3. Altere o exercicio 2, mostre o valor total dos pedidos por cliente. ATENÇÃO: sum(pedido.vlr_pedido) total *cursor exige apelido quando usa SUM, ARG, MAX,etc.
+DECLARE
+	CURSOR c_cliente_pedido is
+	select sum(pedido.vlr_pedido) Total, cliente.nome
+	from cliente, pedido
+    where cliente.cod_cli = pedido.cod_cli
+    group by cliente.nome;
+	r_cliente_pedido c_cliente_pedido%ROWTYPE;
+
+BEGIN
+	OPEN c_cliente_pedido;
+	loop
+	fetch c_cliente_pedido into r_cliente_pedido;
+	exit when c_cliente_pedido%NOTFOUND;
+	DBMS_OUTPUT.PUT_LINE(r_cliente_pedido.nome ||' '|| r_cliente_pedido.Total);
+	end loop;
+	close c_cliente_pedido;
+END;
+
+--4. Altere o exercico 3 e mostre apenas os clientes com a soma dos pedidos superior a 5.000.
+DECLARE
+	CURSOR c_cliente_pedido is
+	select sum(pedido.vlr_pedido) Total, cliente.nome
+	from cliente, pedido
+    where cliente.cod_cli = pedido.cod_cli
+    group by cliente.nome
+	having sum(pedido.vlr_pedido)>5000;
+	r_cliente_pedido c_cliente_pedido%ROWTYPE;
+
+BEGIN
+	OPEN c_cliente_pedido;
+	loop
+	fetch c_cliente_pedido into r_cliente_pedido;
+	exit when c_cliente_pedido%NOTFOUND;
+	DBMS_OUTPUT.PUT_LINE(r_cliente_pedido.nome ||' '|| r_cliente_pedido.Total);
+	end loop;
+	close c_cliente_pedido;
+END;

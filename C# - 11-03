@@ -1,0 +1,54 @@
+1 - models (botão direito) > adicionar > novo item > escolher classe > renomear
+
+public int Id { get; set; } //Id com i maiusculo gera uma PK automaticamente
+public string Titulo { get; set; }
+public string Genero { get; set; }
+
+2 - controller (botão direito) > adicionar > controlador > controlador mvc com exibições, usando o entity framework > escolher meu arquivo recém feito > cria banco no + > adicionar
+
+3 - ferramentas > gerenciador de pacotes NuGet > console de gerenciador de pacote
+dotnet restore
+Add-Migration Initial ...2 (não pose ser o mesmo nome)
+Update-Database
+
+rodar programa
+
+
+
+
+Exercício - Criar um novo projeto com as seguintes informações:
+
+Produto	
+idProduto --pk	
+Descricao --obrigatório		
+Valor  --pesquisar como restringir valores positivos(bloquear valores negativos)
+-------------------------------------
+[Key] //DataAnnotations
+public int idProduto { get; set; } //Id com i maiusculo gera uma PK automaticamente
+
+[Required] //DataAnnotations
+public string Descricao { get; set; }
+
+
+//[Range(0, Double.PositiveInfinity, ErrorMessage ="O valor deve ser maior que 0.")]
+[Range(0,9999, ErrorMessage = "O valor deve ser maior que 0.")]
+public double Valor { get; set; }
+//[AllowedValues(true)]
+
+
+Cliente	
+idCliente --pk
+Nome
+DataNascimento --verificar o formato
+ValorSalario --maior que zero
+---------------------------------
+[Key] 
+public int idCliente { get; set; } //Id com i maiusculo gera uma PK automaticamente
+public string Nome { get; set; }
+
+//[Range(typeof(DateTime), "1/1/1800", "31/12/2030", ErrorMessage = "Data inválida")]
+[DataType(DataType.Date)]
+public DateTime DataNascimento { get; set; }
+
+[Range(0, 9999, ErrorMessage = "O valor deve ser maior que 0.")]
+public double ValorSalario { get; set; }

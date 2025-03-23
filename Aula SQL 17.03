@@ -1,0 +1,323 @@
+CREATE TABLE PESSOA
+    (
+    id_pessoa integer,
+    nome varchar2(20),
+    cpf varchar2(14)
+    );
+
+CREATE TABLE CURSO
+    (
+    id_curso integer,
+    nome varchar2(20)
+    );
+
+CREATE TABLE MENSALIDADE
+    (
+    id_curso integer,
+    id_Pessoa integer,
+    valor number(5,2)
+    );
+
+Insert into Pessoa values(1,'Eliézio Mesquita','11109865424');
+    Insert into Pessoa values(2,'Maria Joaquina','93104465334');
+    Insert into Pessoa values(3,'José da Silva','14109835424');
+
+Insert into curso values(1,'Sistemas');
+    Insert into curso values(2,'Administração');
+    Insert into curso values(3,'Filosofia');
+
+Insert into mensalidade values(1,1,345.45);
+    Insert into mensalidade values(2,3,500);
+    Insert into mensalidade values(3,2,831.28);
+
+Alter table Pessoa add constraint ID_PESSOA_PK primary key (ID_PESSOA);
+
+Alter table Curso add constraint ID_CURSO_PK primary key (ID_CURSO);
+
+alter table Mensalidade add constraints ID_PESSOA_FK FOREIGN KEY(Id_Pessoa) references Pessoa(Id_Pessoa);
+    alter table Mensalidade add constraints ID_CURSO_FK FOREIGN KEY(Id_Curso) references Curso(Id_Curso);
+
+Alter table Pessoa add RG varchar2(14);
+Alter table Mensalidade add constraint ID_Mensalidade_PK primary key (ID_PESSOA, Id_Curso);
+
+-- 1- Usando cursor mostrar as pessoas .
+declare
+    cursor c_pessoas is
+        select nome
+        from pessoa;
+        r_pessoa c_pessoas%rowtype;
+begin
+    open c_pessoas;
+    loop
+    fetch c_pessoas into r_pessoa;
+    exit when c_pessoas%notfound;
+    dbms_output.put_line(r_pessoa.nome);
+    end loop;
+    close c_pessoas;
+    end;
+
+-- 2. Alterar o exercicio 1, mostrar a pessoa, o curso e o valor da mensalidade
+declare
+    cursor c_pessoa_infos is
+        select pessoa.nome, curso.nome nomeCurso, mensalidade.valor
+        from pessoa, curso, mensalidade
+            where pessoa.id_pessoa = mensalidade.id_pessoa 
+            and curso.id_curso = mensalidade.id_curso
+            order by pessoa.nome, nomeCurso, mensalidade.valor;
+        r_pessoa_infos c_pessoa_infos%rowtype;
+    begin
+        open c_pessoa_infos;
+    loop
+    fetch c_pessoa_infos into r_pessoa_infos;
+    exit when c_pessoa_infos%notfound;
+    dbms_output.put_line(r_pessoa_infos.nome || ' ' || r_pessoa_infos.nomeCurso || ' ' || r_pessoa_infos.valor);
+    end loop;
+    close c_pessoa_infos;
+    end;
+
+    -- CURSOR ENCADEADO
+ Drop table cidade cascade constraints;
+drop table pessoa cascade constraints;
+
+CREATE TABLE Cidade (
+  Cod_Cidade INTEGER   NOT NULL ,
+  Nome_Cidade VARCHAR(40)   NOT NULL ,
+  UF VARCHAR(2)    ,
+  País VARCHAR(75)   NOT NULL   ,
+PRIMARY KEY(Cod_Cidade));
+
+
+
+CREATE TABLE PESSOA (
+  id_PESSOA NUMERIC(10)   NOT NULL ,
+  Cod_Cidade INTEGER   NOT NULL ,
+  CGC_CPF VARCHAR(10)   NOT NULL ,
+  NOME VARCHAR(150)   NOT NULL ,
+  ENDERECO VARCHAR(120)    ,
+  BAIRRO VARCHAR(50)    ,
+  CEP VARCHAR(12)    ,
+  PESSOA_FIS_JUR VARCHAR(1)    ,
+PRIMARY KEY(id_PESSOA)  ,
+  FOREIGN KEY(Cod_Cidade)
+    REFERENCES Cidade(Cod_Cidade));
+
+
+Insert into CIDADE (COD_CIDADE,NOME_CIDADE,UF,PAÍS) values ('1','Campo Bom','RS','Brasil');
+Insert into CIDADE (COD_CIDADE,NOME_CIDADE,UF,PAÍS) values ('2','São Leopoldo','RS','Brasil');
+Insert into CIDADE (COD_CIDADE,NOME_CIDADE,UF,PAÍS) values ('3','São Paulo','SP','Brasil');
+
+
+Insert into PESSOA (ID_PESSOA,COD_CIDADE,CGC_CPF,NOME,ENDERECO,BAIRRO,CEP,PESSOA_FIS_JUR) values ('1','1','888888','João Da Silva','Nova Santana',null,'9999999','F');
+Insert into PESSOA (ID_PESSOA,COD_CIDADE,CGC_CPF,NOME,ENDERECO,BAIRRO,CEP,PESSOA_FIS_JUR) values ('2','1','111111','Maria de Lourdes','Nova Brentano',null,'9999999','J');
+Insert into PESSOA (ID_PESSOA,COD_CIDADE,CGC_CPF,NOME,ENDERECO,BAIRRO,CEP,PESSOA_FIS_JUR) values ('3','2','222222','João Augusto da Luz','Maralto',null,'7777777','F');
+Insert into PESSOA (ID_PESSOA,COD_CIDADE,CGC_CPF,NOME,ENDERECO,BAIRRO,CEP,PESSOA_FIS_JUR) values ('4','2','2234567','Aquatema da Silva','Nova Hartz',null,'66666666','F');
+Insert into PESSOA (ID_PESSOA,COD_CIDADE,CGC_CPF,NOME,ENDERECO,BAIRRO,CEP,PESSOA_FIS_JUR) values ('5','3','55555555','São Paulo','São Bernardo',null,'55555555','F');
+
+DECLARE
+   CURSOR c_cidade is
+      select cod_cidade, nome_cidade from cidade;
+      r_cidade c_cidade%rowtype;
+
+      cursor c_pessoa is
+        select id_pessoa, nome nome_pessoa from PESSOA
+        where  pessoa.cod_cidade = r_cidade.cod_cidade;
+
+        r_pessoa c_pessoa%rowtype;
+
+BEGIN
+    open c_cidade;
+        loop
+            FETCH c_cidade into r_cidade;
+            exit when c_cidade%notfound;
+            dbms_output.put_line(r_cidade.nome_cidade);
+            -------------------------------------
+            -- loop encadeado
+            open c_pessoa;
+            loop
+                FETCH c_pessoa into r_pessoa;
+
+                exit when c_pessoa%notfound;
+                dbms_output.put_line(r_pessoa.nome_pessoa);
+            end loop;
+            close c_pessoa;
+            -- fim loop encadeado
+            ---------------------------------------
+       end loop;
+    close c_cidade;
+
+end;
+
+create table CentroCusto
+(idCentro Number(7),
+ Descricao Varchar2(100),
+ Constraint CENTROCUSTO_PK
+ Primary key(idCentro));
+ 
+create table Produto
+(IdProduto Number(7),
+Descricao Varchar2(100),
+UnidMed Varchar2(4),
+ValorUnit Number(10),
+ProdAtivoInativo Varchar2(1),
+Observ Varchar2(100),  
+idCentro Number(7),
+Constraint PRODUTO_PK
+Primary key(IdProduto),
+Constraint Produto_Centro_FK Foreign key(idCentro) references CentroCusto(idCentro));
+
+
+
+create table Estoque
+(idEstoque Number(7),
+ Descricao Varchar2(100),
+ Constraint ESTOQUE_PK
+ Primary key(idEstoque));
+
+create table Linhas
+(idLinhas Number(7),
+ idEstoque Number(7),
+ IdProduto Number(7),
+ QtdEstoque Number(7),
+ QtdMinEstoque Number(7),
+ Constraint LINHAS_PK
+ Primary key(idLinhas),
+ Constraint Linhas_Estoque_FK Foreign key(idEstoque) references Estoque(idEstoque),
+ Constraint Linhas_Produto_FK Foreign key(idProduto) references Produto(idProduto));  
+
+insert into Estoque values(1,'Estoque NH');
+insert into Estoque values(2,'Estoque SL');
+
+insert into CentroCusto values(1,'Centro 0097');
+insert into CentroCusto values(2,'Centro 0046');
+
+--Exercício 1
+insert into CentroCusto values(3,'Rio de Janeiro');
+insert into CentroCusto values(4,'São Paulo');
+
+insert into Linhas values(1, 1, 5, 78, 10);
+insert into Linhas values(3, 1, 4, 20, 8);
+insert into Linhas values(2, 1, 3, 10, 5);
+insert into Linhas values(4, 2, 2, 100, 10);
+insert into Linhas values(5, 2, 1, 9, 3);
+insert into Linhas values(6, 2, 9, 20, 5);
+insert into Linhas values(7, 2, 8, 15, 7);
+
+insert into Produto values(1,'Máquina de lavar', 'un', 2560, 'a', 'Eletrolux', 1);
+insert into Produto values(2,'mangueira', 'mt', 2, 'i', 'mangueira de aço', 1);
+insert into Produto values(3,'Guarda-Roupas', 'un', 1800, 'a', 'Madeira', 1);
+insert into Produto values(4,'Roda', 'un', 560, 'i', 'Aro 14', 1);
+insert into Produto values(5,'Pneu', 'un', 236, 'i', 'Elite', 2);
+insert into Produto values(6,'Soquete', 'un', 12, 'a', 'Vonder', 2);
+insert into Produto values(7,'Chave seta', 'un', 98, 'a', 'GM', 1);
+insert into Produto values(8,'Chave de boca', 'un', 19, 'i', 'Vonder', 2);
+insert into Produto values(9,'Alicate', 'un', 36, 'a', 'Gedore', 1);
+insert into Produto values(10,'Tesoura', 'un', 15, 'a', 'Aço', 2);
+
+--Exercício1 Com um cursor mostrar os centros de custo
+declare
+    cursor c_centro is
+    select descricao
+    from CentroCusto;
+    r_centro c_centro%rowtype;
+begin
+    open c_centro;
+    loop
+    fetch c_centro into r_centro;
+    exit when c_centro%notfound;
+    dbms_output.put_line(r_centro.descricao);
+    end loop;
+    close c_centro;
+end;
+
+-- Exercício 2. Alterar o exercício 1, incluir um cursor encadeado mostrando
+-- os produtos do centro de custo.
+DECLARE
+    cursor c_centro is
+    select idcentro, descricao from CentroCusto;
+    r_centro c_centro%rowtype;
+
+    cursor c_produto is
+    select idproduto, descricao from produto
+    where produto.idcentro = r_centro.idcentro;
+    r_produto c_produto%rowtype;
+BEGIN
+    open c_centro;
+    loop
+        fetch c_centro into r_centro;
+        exit when c_centro%notfound;
+        dbms_output.put_line(r_centro.descricao || ' ' || r_centro.idcentro);
+    open c_produto;
+    loop
+        fetch c_produto into r_produto;
+        exit when c_produto%notfound;
+        dbms_output.put_line(r_produto.descricao);
+    end loop;
+    close c_produto;
+end loop;
+close c_centro;
+end;
+
+----Exercício 3.Com um cursor, mostrar os estoques cadastrados.
+
+--Exercício 4. Alterar o exercício 3, adicionando um cursor encadeado mostrando
+-- o idproduto, qtide de estoque da tabela linhas, conforme o código do estoque(idestoque)
+
+
+
+
+--RESPOSTAS
+--3
+
+declare
+cursor C_Estoque is
+select idestoque, descricao
+from Estoque;
+R_Estoque C_Estoque%ROWTYPE;
+
+Begin
+	Open C_Estoque;
+		loop
+		Fetch C_Estoque into R_Estoque;
+		exit when C_Estoque%NOTFOUND;
+		DBMS_OUTPUT.PUT_LINE(R_Estoque.descricao ||' '|| R_Estoque.idestoque);
+		end loop;
+	close C_Estoque;
+end;
+
+
+--4
+DECLARE
+   CURSOR c_estoque is
+      select idestoque
+      from estoque;
+      r_estoque c_estoque%rowtype;
+
+      cursor c_linhas is
+        select QtdEstoque, idproduto
+        from linhas
+        where  linhas.idestoque = r_estoque.idestoque;
+
+        r_linhas c_linhas%rowtype;
+
+BEGIN
+    open c_estoque;
+        loop
+            FETCH c_estoque into r_estoque;
+            exit when c_estoque%notfound;
+            dbms_output.put_line(r_linhas.QtdEstoque);
+            -------------------------------------
+            -- loop encadeado
+            open c_linhas;
+            loop
+                FETCH c_linhas into r_linhas;
+
+                exit when c_linhas%notfound;
+                dbms_output.put_line(r_linhas.IdProduto);
+            end loop;
+            close c_linhas;
+            -- fim loop encadeado
+            ---------------------------------------
+       end loop;
+    close c_estoque;
+
+end;

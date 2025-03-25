@@ -1,0 +1,214 @@
+Função (ou métodos) em Banco de Dados
+
+-Possuem aplicações(regras de negócio) mais específicos.
+
+Create or Replace Function Fn_cidades
+	(p_cod_cidade in Number)
+	Return varchar2 --tipo de dado que retorna
+is
+	--área para declarar variáveis e cursor
+Begin
+	--corpo do programa
+
+	Return (valor); --() info que retorna
+End;
+
+
+--
+
+Create or Replace Function Fn_cidades
+	(p_cod_cidade in Number)
+	Return varchar2 
+is
+	cursor c_cidade is
+		select nome_cidade, uf, pais
+		from cidade where cod_cidade = p_cod_cidade;
+	r_cidade c_cidade%rowtype;
+Begin
+	open c_cidade;
+	fetch c_cidade into r_cidade;
+	close c_cidade;
+Return (r_cidade.nome_cidade || ' ' || r_cidade.uf);
+End;
+-- p -parametro(variavel)
+
+--
+
+
+Para executar a função
+
+select fn_[nome tabela] (2) from dual;
+
+*(2) --codigo da cidade(parametro).
+
+
+--------------------------
+
+Create or replace function fn_cidade
+(P_cod_cidade in Number)  
+Return Varchar2  
+IS  
+        Cursor C_A IS  
+                 SELECT cidade.nome_cidade
+    FROM cidade
+    WHERE cidade.COD_CIDADE =P_cod_cidade; -- p - parametro(variavel)
+ 
+R_A C_A%ROWTYPE;  
+ 
+BEGIN  
+OPEN C_A;
+        FETCH C_A INTO R_A;
+        if c_a%notfound THEN
+        return('nao encontrou');
+        end if;
+CLOSE C_A;  
+ 
+Return ( R_A.nome_cidade );
+END;
+
+-------------------------------------
+
+
+
+
+
+
+-- EXERCICIOS DE EXEMPLO E EXERCICIOS FEITOS
+
+
+
+CREATE TABLE Cidade (
+  Cod_Cidade INTEGER   NOT NULL ,
+  Nome_Cidade VARCHAR(40)   NOT NULL ,
+  UF VARCHAR(2)    ,
+  País VARCHAR(75)   NOT NULL   ,
+PRIMARY KEY(Cod_Cidade));
+
+Insert into CIDADE (COD_CIDADE,NOME_CIDADE,UF,PAÍS) values ('1','Campo Bom','RS','Brasil');
+Insert into CIDADE (COD_CIDADE,NOME_CIDADE,UF,PAÍS) values ('2','São Leopoldo','RS','Brasil');
+Insert into CIDADE (COD_CIDADE,NOME_CIDADE,UF,PAÍS) values ('3','São Paulo','SP','Brasil');
+
+Create or replace function fn_cidade
+(P_cod_cidade in Number)  
+Return Varchar2  
+IS  
+        Cursor C_A IS  
+                 SELECT cidade.nome_cidade
+    FROM cidade
+    WHERE cidade.COD_CIDADE =P_cod_cidade; -- p - parametro(variavel)
+ 
+R_A C_A%ROWTYPE;  
+ 
+BEGIN  
+OPEN C_A;
+        FETCH C_A INTO R_A;
+        if c_a%notfound THEN
+        return('nao encontrou');
+        end if;
+CLOSE C_A;  
+ 
+Return ( R_A.nome_cidade );
+END;
+
+
+select fn_cidade(10) from dual;
+
+-- 1. Crie a tabela pessoa, insira alguns registros(aula anterior). Crie uma função que retorna o NOME DA PESSOA e o NOME DA CIDADE.
+-- Passe como parâmetro o código da pessoa.
+
+CREATE TABLE PESSOA (
+  id_PESSOA NUMERIC(10)   NOT NULL ,
+  Cod_Cidade INTEGER   NOT NULL ,
+  CGC_CPF VARCHAR(10)   NOT NULL ,
+  NOME VARCHAR(150)   NOT NULL ,
+  ENDERECO VARCHAR(120)    ,
+  BAIRRO VARCHAR(50)    ,
+  CEP VARCHAR(12)    ,
+  PESSOA_FIS_JUR VARCHAR(1)    ,
+PRIMARY KEY(id_PESSOA)  ,
+  FOREIGN KEY(Cod_Cidade)
+    REFERENCES Cidade(Cod_Cidade));
+
+Insert into PESSOA (ID_PESSOA,COD_CIDADE,CGC_CPF,NOME,ENDERECO,BAIRRO,CEP,PESSOA_FIS_JUR) values ('1','1','888888','João Da Silva','Nova Santana',null,'9999999','F');
+Insert into PESSOA (ID_PESSOA,COD_CIDADE,CGC_CPF,NOME,ENDERECO,BAIRRO,CEP,PESSOA_FIS_JUR) values ('2','1','111111','Maria de Lourdes','Nova Brentano',null,'9999999','J');
+Insert into PESSOA (ID_PESSOA,COD_CIDADE,CGC_CPF,NOME,ENDERECO,BAIRRO,CEP,PESSOA_FIS_JUR) values ('3','2','222222','João Augusto da Luz','Maralto',null,'7777777','F');
+Insert into PESSOA (ID_PESSOA,COD_CIDADE,CGC_CPF,NOME,ENDERECO,BAIRRO,CEP,PESSOA_FIS_JUR) values ('4','2','2234567','Aquatema da Silva','Nova Hartz',null,'66666666','F');
+Insert into PESSOA (ID_PESSOA,COD_CIDADE,CGC_CPF,NOME,ENDERECO,BAIRRO,CEP,PESSOA_FIS_JUR) values ('5','3','55555555','São Paulo','São Bernardo',null,'55555555','F');
+
+
+create or replace function fn_nomes
+(parametro_id_pessoa in NUMBER)
+Return VARCHAR2
+IS
+    cursor c_nomes is
+        select pessoa.nome, cidade.nome_cidade
+        from pessoa, cidade
+        where cidade.cod_cidade = pessoa.cod_cidade
+        and pessoa.id_pessoa = parametro_id_pessoa;
+
+r_nomes c_nomes%ROWTYPE;
+begin 
+    open c_nomes;
+        fetch c_nomes into r_nomes;
+        if c_nomes%notfound THEN
+        return ('nao encontrou');
+        end if;
+close c_nomes;
+return (r_nomes.nome || ' ' || r_nomes.nome_cidade);
+end;
+
+select fn_nomes(3) from dual;
+
+--2. Faça uma função que retorna quantas pessoas estão cadastradas.
+--Obs: return NUMBER, funcao nao tem parametro
+
+create or replace function fn_qtdPessoas
+return Number
+is
+    cursor c_qtdPessoas IS
+        select count(pessoa.id_pessoa) quantidadePessoa --count([info que quer contar]) + APELIDO da info que quer contar
+        from pessoa;
+
+r_qtdPessoas c_qtdPessoas%rowtype;
+BEGIN
+    open c_qtdPessoas;
+    fetch c_qtdPessoas into r_qtdPessoas;
+    if c_qtdPessoas%notfound THEN
+        return ('nao encontrou');
+        end if;
+close c_qtdPessoas;
+return (r_qtdPessoas.quantidadePessoa);
+end;
+
+select fn_qtdPessoas from dual;
+
+--3. Faça uma função que mostre o NOME DA CIDADE e QUANTAS PESSOAS estão cadastradas nesta cidade. Passe como parâmentr o codigo da cidade.
+create or replace function fn_infoCidades
+(parametro_cod_cidade in NUMBER)
+return VARCHAR2
+IS
+    cursor c_infoCidades is
+        select COUNT(pessoa.id_pessoa) qtdPessoa, cidade.nome_cidade
+        from pessoa, cidade
+        where pessoa.cod_cidade = cidade.COD_CIDADE
+        and cidade.cod_cidade = parametro_cod_cidade
+        group by cidade.nome_cidade;
+
+r_infoCidades c_infoCidades%rowtype;
+BEGIN
+    open c_infoCidades;
+    fetch c_infoCidades into r_infoCidades;
+    if c_infoCidades%notfound THEN
+        return ('nao encontrou');
+        end if;
+close c_infoCidades;
+RETURN (r_infoCidades.qtdPessoa || '  ' || r_infoCidades.nome_cidade);
+end;
+
+select fn_infoCidades(1) from dual;
+
+--forma correto
+select cod_cidade, fn_infoCidades(cod_cidade) from cidade; --where COD_CIDADE in (2,3);
+--or
+select fn_infoCidades(cod_cidade) from cidade;
+

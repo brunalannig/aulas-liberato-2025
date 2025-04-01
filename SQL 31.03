@@ -66,7 +66,7 @@ insert into funcionario values (14, 'Portinari Muri Per Si', 10, 3, to_date('01/
 insert into funcionario values (15, 'Carlos Henrique Motz',11, 4, to_date('11/08/2013','dd/mm/rrrr'), to_date('01/01/1997','dd/mm/rrrr'));
 insert into funcionario values (16, 'Wilison Morta de Si', 12, 4, to_date('12/08/2013','dd/mm/rrrr'), to_date('12/07/1998','dd/mm/rrrr'));
 
---1. Faça uma função que retorna o nome do departamento e a quantidade de funcionários. Passe como parâmetro o código do departamento.
+--1.Faça uma função que retorna o nome do departamento e a quantidade de funcionários. Passe como parâmetro o código do departamento.
 create or replace function fn_depart_funcio
 (parametro_cod_departamento in NUMBER)
 return VARCHAR2
@@ -119,7 +119,7 @@ begin
 
 SELECT FN_INFOS(COD_FUNCIONARIO) from FUNCIONARIO;
 
--- 3. Usando um select com subconsulta, selecione o ultimo salario de um funcionario. Use a funcao MAX (em vez de count).
+-- 3.Usando um select com subconsulta, selecione o ultimo salario de um funcionario. Use a funcao MAX (em vez de count).
 insert into salario values (1, to_date( '01/01/2013','dd/mm/rrrr'), 1000);
 insert into salario values (1, to_date( '01/01/2014','dd/mm/rrrr'), 2000);
 insert into salario values (1, to_date( '01/01/2015','dd/mm/rrrr'), 3000);
@@ -134,7 +134,15 @@ where salario.cod_funcionario = (select funcionario.cod_funcionario
 from funcionario where salario.cod_funcionario = funcionario.cod_funcionario)
 group by salario.cod_funcionario;
 
--- 4. Utilizando o select do exercicio 3, faça uma funcao que retorna o nome do funcionario e seu ultimo salario. Passe como parametro o codigo do funcionario.
+-- resposta correta
+select salario.valor_salario from salario
+     WHERE salario.COD_FUNCIONARIO = 2
+     and   DATA_SALARIO = (select max(salariosub.data_salario)
+                           from  SALARIO salariosub
+                           where salariosub.COD_funcionario = salario.COD_FUNCIONARIO
+                             );
+
+-- 4.Utilizando o select do exercicio 3, faça uma funcao que retorna o nome do funcionario e seu ultimo salario. Passe como parametro o codigo do funcionario.
 create or replace function FN_SALARIO
 (PARAMETRO_COD_FUNCIONARIO in number)
 return varchar2
@@ -159,3 +167,31 @@ begin
     end;
 
 SELECT FN_SALARIO(COD_FUNCIONARIO) from FUNCIONARIO;
+
+-- respostas correta
+create or replace function exercicio_2
+(P_cod_funcionario in Number)  
+Return Varchar2  
+IS  
+        Cursor C_A IS  
+                 select salario.valor_salario, funcionario.NOME_FUNCIONARIO
+                 from salario, funcionario
+     WHERE salario.COD_FUNCIONARIO = P_cod_funcionario
+     and   funcionario.COD_FUNCIONARIO = salario.COD_FUNCIONARIO
+     and   DATA_SALARIO = (select max(salariosub.data_salario)
+                           from  SALARIO salariosub
+                           where salariosub.COD_funcionario = salario.COD_FUNCIONARIO
+                             );
+   
+R_A C_A%ROWTYPE;  
+
+BEGIN  
+OPEN C_A;
+        FETCH C_A INTO R_A;  
+CLOSE C_A;  
+
+Return ( R_A.NOME_FUNCIONARIO||' '||R_A.valor_salario );
+END;
+
+
+select EXERCICIO_2(2) from dual;

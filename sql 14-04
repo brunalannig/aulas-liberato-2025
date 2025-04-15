@@ -1,0 +1,181 @@
+
+create table empresa
+(cod_empresa number(3) not null,
+nome_empresa varchar2 (150) not null,
+nome_fantasia varchar2(150),
+data_abertura date not null,
+cnpj varchar2(45) not null,
+constraint empresa_pk primary key (cod_empresa));
+
+create table departamento
+(cod_departamento number(3) not null,
+cod_empresa number(3) not null,
+descricao_departamento varchar2(100) not null,
+constraint departamento_pk primary key (cod_departamento),
+constraint depto_empresa_fk foreign key (cod_empresa) references empresa(cod_empresa)
+);
+CREATE TABLE FUNCIONARIO
+( COD_FUNCIONARIO NUMBER(5,0),
+NOME_FUNCIONARIO VARCHAR2(100),
+COD_DEPARTAMENTO NUMBER(3,0),
+COD_EMPRESA NUMBER(3,0),
+DATA_CADASTRO DATE,
+DATA_NASCIMENTO DATE,
+constraint funcionario_pk primary key (cod_funcionario),
+constraint funcionario_depto_fk foreign key (cod_departamento) references departamento(cod_departamento),
+constraint funcionario_empresa_fk foreign key (cod_empresa) references empresa(cod_empresa) );
+
+create table salario
+( cod_funcionario number(5) not null,
+data_salario date not null,
+valor_salario number(12,2) not null,
+constraint salario_pk primary key (cod_funcionario, data_salario),
+constraint salario_func_fk foreign key (cod_funcionario) references funcionario(cod_funcionario));
+
+insert into empresa values (1,'JNC' , 'Janelas e Esquadrias JNC', to_date('01/01/2014','dd/mm/rrrr'), '98977668868');
+insert into empresa values (2,'Bartiole' , 'Hipermercado Bartiole', to_date('01/01/2013','dd/mm/rrrr'), '45677776677');
+insert into empresa values (3,'Gerda' , 'Gerda Marmitaria e Cia', to_date('01/03/2014','dd/mm/rrrr'), '000987990099');
+insert into empresa values (4,'Montanhismo AG' , 'Montanhismno Agência de Viagens', to_date('12/03/2014','dd/mm/rrrr'), '98977668868');
+
+insert into departamento values (1, 1, 'RH');
+insert into departamento values (2, 1, 'Financeiro');
+insert into departamento values (3, 1, 'Vendas');
+insert into departamento values (4, 1, 'Produção ');
+insert into departamento values (5, 1, 'Marketing');
+insert into departamento values (6, 2, 'RH');
+insert into departamento values (7, 2, 'Produção');
+insert into departamento values (8, 2, 'Vendas');
+insert into departamento values (9, 3, 'RH');
+insert into departamento values (10, 3, 'Vendas');
+insert into departamento values (11, 4, 'RH');
+insert into departamento values (12, 4, 'Financeiro');
+
+insert into funcionario values (1, 'Joao da Silva Sauro', 1, 1, to_date( '01/01/2013','dd/mm/rrrr'), to_date('21/01/1980','dd/mm/rrrr'));
+insert into funcionario values (2, 'Maria da Luz Cardoso', 3, 1, to_date('01/03/2013','dd/mm/rrrr'), to_date('10/01/1988','dd/mm/rrrr'));
+insert into funcionario values (3, 'Joao da Silva Sauro', 2, 1, to_date('01/01/2011','dd/mm/rrrr'), to_date('01/04/2005','dd/mm/rrrr'));
+insert into funcionario values (4, 'Pedro Alcântara', 1, 1, to_date('01/03/2013','dd/mm/rrrr'), to_date('01/03/1999','dd/mm/rrrr'));
+insert into funcionario values (5, 'Joao da Silva Sauro', 1, 1,to_date( '01/01/2013','dd/mm/rrrr'), to_date('01/01/1981','dd/mm/rrrr'));
+insert into funcionario values (6, 'Armando Silva', 6, 2, to_date('01/01/2013','dd/mm/rrrr'), to_date('01/12/1987','dd/mm/rrrr'));
+insert into funcionario values (7, 'Joao Alves', 6, 2, to_date('10/09/2013','dd/mm/rrrr'), to_date('22/11/1990','dd/mm/rrrr'));
+insert into funcionario values (8, 'Pedro Mariano', 7, 2, to_date('21/09/2012','dd/mm/rrrr'), to_date('01/01/1910','dd/mm/rrrr'));
+insert into funcionario values (9, 'Wilison Azevedo Moura', 8, 2, to_date('01/09/2013','dd/mm/rrrr'), to_date('15/08/1989','dd/mm/rrrr'));
+insert into funcionario values (10, 'Oscar Lorosa de Marco', 8, 2, to_date('01/01/2014','dd/mm/rrrr'), to_date('11/11/1975','dd/mm/rrrr'));
+insert into funcionario values (11, 'Uelington Morgan Frietzviller', 9, 3, to_date('01/10/2013','dd/mm/rrrr'), to_date('01/07/1986','dd/mm/rrrr'));
+insert into funcionario values (12, 'Maria Joaquim Barboa Alvino', 9, 3, to_date('12/11/2013','dd/mm/rrrr'), to_date('11/07/1986','dd/mm/rrrr'));
+insert into funcionario values (13, 'Oscalina Moriati Alavan', 10, 3, to_date('01/01/2013','dd/mm/rrrr'), to_date('01/01/1988','dd/mm/rrrr'));
+insert into funcionario values (14, 'Portinari Muri Per Si', 10, 3, to_date('01/12/2013','dd/mm/rrrr'), to_date('01/10/1981','dd/mm/rrrr'));
+insert into funcionario values (15, 'Carlos Henrique Motz',11, 4, to_date('11/08/2013','dd/mm/rrrr'), to_date('01/01/1997','dd/mm/rrrr'));
+insert into funcionario values (16, 'Wilison Morta de Si', 12, 4, to_date('12/08/2013','dd/mm/rrrr'), to_date('12/07/1998','dd/mm/rrrr'));
+
+
+
+-- 1. Faça um procedure que delete um departamento
+create or replace PROCEDURE proc_departamento
+(
+    departamento_id in number
+)is
+begin
+    delete from DEPARTAMENTO where cod_departamento = departamento_id;
+end;
+
+exec proc_departamento(5);
+
+select * from departamento;
+
+--
+create or replace procedure prc_deletadepto (p_depto IN number, p_conta out number)
+IS 
+BEGIN
+select count(1)into p_conta from FUNCIONARIO
+where funcionario.COD_DEPARTAMENTO = p_depto;
+if p_conta <=0 then
+delete DEPARTAMENTO where DEPARTAMENTO.COD_DEPARTAMENTO = p_depto;
+end if;
+end;
+
+BEGIN
+    DECLARE
+        v_conta number(4):=-1;
+    BEGIN
+        prc_deletadepto(4, v_conta);
+        dbms_output.put_line(v_conta);
+    end;end;
+
+
+--2. Faça um procedure que retorne o numero de cidades cadastradas.
+CREATE TABLE Cidade (
+  Cod_Cidade INTEGER   NOT NULL ,
+  Nome_Cidade VARCHAR(40)   NOT NULL ,
+  UF VARCHAR(2)    ,
+  País VARCHAR(75)   NOT NULL   ,
+PRIMARY KEY(Cod_Cidade));
+
+
+
+CREATE TABLE PESSOA (
+  id_PESSOA NUMERIC(10)   NOT NULL ,
+  Cod_Cidade INTEGER   NOT NULL ,
+  CGC_CPF VARCHAR(10)   NOT NULL ,
+  NOME VARCHAR(150)   NOT NULL ,
+  ENDERECO VARCHAR(120)    ,
+  BAIRRO VARCHAR(50)    ,
+  CEP VARCHAR(12)    ,
+  PESSOA_FIS_JUR VARCHAR(1)    ,
+PRIMARY KEY(id_PESSOA)  ,
+  FOREIGN KEY(Cod_Cidade)
+    REFERENCES Cidade(Cod_Cidade));
+
+
+Insert into CIDADE (COD_CIDADE,NOME_CIDADE,UF,PAÍS) values ('1','Campo Bom','RS','Brasil');
+Insert into CIDADE (COD_CIDADE,NOME_CIDADE,UF,PAÍS) values ('2','São Leopoldo','RS','Brasil');
+Insert into CIDADE (COD_CIDADE,NOME_CIDADE,UF,PAÍS) values ('3','São Paulo','SP','Brasil');
+
+
+Insert into PESSOA (ID_PESSOA,COD_CIDADE,CGC_CPF,NOME,ENDERECO,BAIRRO,CEP,PESSOA_FIS_JUR) values ('1','1','888888','João Da Silva','Nova Santana',null,'9999999','F');
+Insert into PESSOA (ID_PESSOA,COD_CIDADE,CGC_CPF,NOME,ENDERECO,BAIRRO,CEP,PESSOA_FIS_JUR) values ('2','1','111111','Maria de Lourdes','Nova Brentano',null,'9999999','J');
+Insert into PESSOA (ID_PESSOA,COD_CIDADE,CGC_CPF,NOME,ENDERECO,BAIRRO,CEP,PESSOA_FIS_JUR) values ('3','2','222222','João Augusto da Luz','Maralto',null,'7777777','F');
+Insert into PESSOA (ID_PESSOA,COD_CIDADE,CGC_CPF,NOME,ENDERECO,BAIRRO,CEP,PESSOA_FIS_JUR) values ('4','2','2234567','Aquatema da Silva','Nova Hartz',null,'66666666','F');
+Insert into PESSOA (ID_PESSOA,COD_CIDADE,CGC_CPF,NOME,ENDERECO,BAIRRO,CEP,PESSOA_FIS_JUR) values ('5','3','55555555','São Paulo','São Bernardo',null,'55555555','F');
+
+-- 2. Faça um procedure que retorne o numero de cidades cadastradas.
+
+
+
+-- 3. Faça um procedure que retorna o nome da cidade, a uf e o pais. Passe como prametro o codigo da cidade.
+create or replace PROCEDURE proc_infos
+(
+    proc_codigo in number,
+    proc_nome out varchar2,
+    proc_uf out varchar2
+)IS
+begin
+    select nome_cidade, uf into proc_nome, proc_uf
+    from cidade
+    WHERE cidade.COD_CIDADE = proc_codigo;
+end;
+
+BEGIN
+    declare 
+        definicao_variavel_cod_cidade number(4);
+        definicao_variavel_nome_cidade varchar2(100);
+        definicao_variavel_uf varchar2(2);
+    BEGIN
+        proc_infos(3, definicao_variavel_nome_cidade, definicao_variavel_uf);
+        dbms_output.put_line(definicao_variavel_nome_cidade || ' '  || definicao_variavel_uf);
+    end;
+end;
+
+-- 4. Altere a procedure do exercicio 3. Mostre tambem quantas pessoas estão cadastradas na cidade selecionada.
+create or replace PROCEDURE proc_infos
+(
+    proc_codigo in number,
+    proc_nome out varchar2,
+    proc_uf out varchar2
+)IS
+begin
+    select nome_cidade, uf into proc_nome, proc_uf
+    from cidade
+    WHERE cidade.COD_CIDADE = proc_codigo;
+    --and proc_codigo = proc_codigo_pessoa;
+    select count(*) into p_qtd from pessoa where pessoa.cod_cidade = proc_codigo;
+end;

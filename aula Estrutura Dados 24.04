@@ -1,0 +1,64 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package listacompras;
+
+/**
+ *
+ * @author 24100344
+ */
+public class ListaCompras {
+    //coloca metodos
+    private String[] itens; //array que armazena os itens da lista
+    private int tamanho; //variavel que rastrea o tamanho atual da lista
+    
+    //constructor da classe listaCompras
+    public ListaCompras(){
+        this.itens = new String[10]; //define tamanho do array
+        this.tamanho = 0; //inicializa a lista com 0
+    }
+    
+    //metodo para adicionar um item a lista
+    public void adicionarItem(String item) {
+        //verifica se a lista nao esta cheia
+        if (tamanho < itens.length){
+            itens[tamanho] = item; //adiciona o item ao final da lista
+            tamanho++; //incrementa o tamanho da lista
+        } else{
+            System.out.println("A lista está cheia. Não é possivel adicionar mais itens");
+        }
+        
+    }
+    //metodo para exibir lista
+    public void exibirLista(){
+        for(int i = 0; i < tamanho; i++){
+            System.out.println(itens[i]);
+        }
+    }
+    
+    public void removerItem(String nomeItem){
+        for(int i = 0; i <tamanho; i++){
+            if(tamanho[i] == nomeItem){
+                tamanho--;
+            }
+        }
+    }
+    
+    
+    
+    //metodo principal para testar a classe listaCompras
+    public static void main(String[] args) {
+        ListaCompras lista = new ListaCompras(); //cria uma nova lista de compras
+        
+        //adicionar itens a lista
+        lista.adicionarItem("Arroz");
+        lista.adicionarItem("Feijão");
+        lista.adicionarItem("Maçãs");
+        lista.adicionarItem("Sabonete");
+        lista.exibirLista();
+        lista.removerItem("Arroz");
+    }
+    
+}

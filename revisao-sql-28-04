@@ -1,0 +1,141 @@
+create table Produto
+        (IdProduto Number(5),
+        Descricao Varchar2(100),
+        ValorProduto Number(12,2),
+        AtivoInativo Varchar2(1), 
+        Constraint PRODUTO_PK
+        Primary key(IdProduto));
+
+insert into Produto values(1,'Máquina de lavar', 2560, 'A');
+insert into Produto values(2,'mangueira', 210, 'I');
+insert into Produto values(3,'Guarda-Roupas', 1800, 'A');
+insert into Produto values(4,'Roda', 560, 'I');
+insert into Produto values(5,'Pneu', 236, 'I');
+insert into Produto values(6,'Soquete', 12, 'A');
+insert into Produto values(7,'Chave seta', 98, 'A');
+insert into Produto values(8,'Chave de boca', 19, 'I');
+insert into Produto values(9,'Alicate', 36, 'A');
+insert into Produto values(10,'Tesoura', 15, 'A');
+select * from Produto;
+
+-- 1) Faça uma função que retorna a descrição do produto. Passe idProduto como parâmetro.
+create or  replace function fn_desc_prod
+(param_IdProduto in number)
+return varchar2
+is
+	cursor c_desc_prod is
+	select Descricao
+	from produto
+	where produto.IdProduto = param_IdProduto;
+
+r_desc_prod c_desc_prod%rowtype;
+begin
+	open c_desc_prod;
+	fetch c_desc_prod into r_desc_prod;
+	if c_desc_prod%notfound then
+		return('nao encontrou');
+			end if;
+	close c_desc_prod;
+	return (r_desc_prod.Descricao);
+end;
+
+SELECT fn_desc_prod(IdProduto) from Produto;
+
+-- 2) Faça uma função que retorne a quatidade de produtos ativos.
+create or replace function qtdProdutos
+return number
+is
+cursor c_qtdProdutos is
+	select count(Produto.IdProduto) quantidade
+	from Produto
+	where Produto.AtivoInativo = 'A';
+    
+r_qtdProdutos c_qtdProdutos%rowtype;
+begin
+	open c_qtdProdutos;
+	fetch c_qtdProdutos into r_qtdProdutos;
+	if c_qtdProdutos%notfound then
+	return ('nao encontrou');
+	end if;
+close c_qtdProdutos;
+return (r_qtdProdutos.quantidade);
+end;
+
+SELECT qtdProdutos() from dual;
+
+-- 3) Faça uma função que mostre o produto de maior valor.
+create or replace function maiorValor
+return number
+is
+	cursor c_maiorValor is
+	select MAX(Produto.ValorProduto) valorMaior
+	from Produto;
+
+r_maiorValor c_maiorValor%rowtype;
+begin
+	open c_maiorValor;
+	fetch c_maiorValor into r_maiorValor;
+	if c_maiorValor%notfound then
+	return ('nao encontrou');
+	end if;
+close c_maiorValor;
+return (r_maiorValor.valorMaior);
+end;
+
+SELECT maiorValor() from dual;
+
+-- 4) Faça uma procedure que ative ou inative um produto. Passe como parâmetro o idProduto.
+create or replace procedure ativaInativa
+(
+    param_IdProduto in number,
+    param_AtivoInativo in varchar2
+)
+is
+begin
+update Produto set IdProduto = param_IdProduto, AtivoInativo = param_AtivoInativo
+where Produto.IdProduto = param_IdProduto;
+end;
+
+exec ativaInativa(1, 'I');
+exec ativaInativa(8, 'A');
+select * from Produto;
+
+-- 5) Faça uma procedure que aumente em 10% o valor de um determinado produto. Passe como parâmetro o idProduto.
+
+--valor * 0.1 + valor
+create or replace procedure aumentaValor
+(
+    param_IdProduto in number
+)
+is
+begin
+update Produto set ValorProduto = (ValorProduto * 0.1) + ValorProduto
+where IdProduto = param_IdProduto;
+end;
+
+exec aumentaValor(2);
+select * from Produto;
+
+-- 6) Altere a procedure da questão 5, o usuário deve informar o percentual de aumento entre 10% e 100%.
+
+create or replace procedure aumentaPercentual
+(
+    param_IdProduto in number,
+    param_percentual in number
+)
+is
+begin
+update Produto set ValorProduto = ValorProduto + ((ValorProduto * param_percentual)/100)
+where IdProduto = param_IdProduto;
+end;
+
+exec aumentaPercentual(6,50);
+select * from Produto;
+
+-- 7) Faça uma procedure que delete os produtos. Passe como parâmetro o idProduto
+
+
+
+
+
+--10) Faça uma procedure que retorna o nome do produto, passe como parametro o Id do produto.

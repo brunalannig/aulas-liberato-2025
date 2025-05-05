@@ -266,3 +266,33 @@ end;
 
 --- NAO FINALIZADA
 exec nomeProduto(1);
+
+
+--deu certo
+10)
+--10. Faça uma procedeure que retorna o nome do produto. Passe como parâmetro o código do produto.
+
+CREATE OR REPLACE PROCEDURE prc_obter_nome_produto (
+    param_idProduto IN NUMBER,
+    param_nomeProduto OUT VARCHAR2
+) IS
+BEGIN
+    -- Busca o nome do produto pelo ID
+    SELECT Descricao INTO param_nomeProduto
+    FROM Produto
+    WHERE IdProduto = param_idProduto;
+
+--EXCEPTION
+  --  WHEN NO_DATA_FOUND THEN
+    --    p_nomeProduto := 'Produto não encontrado';
+    --WHEN OTHERS THEN
+    --    p_nomeProduto := 'Erro ao buscar produto';
+END prc_obter_nome_produto;
+
+--Executar a procedure
+DECLARE
+    v_nomeProduto VARCHAR2(100);
+BEGIN
+    prc_obter_nome_produto(1, v_nomeProduto); -- substitua 1 pelo código do produto desejado
+    DBMS_OUTPUT.PUT_LINE('Nome do Produto: ' || v_nomeProduto);
+END;

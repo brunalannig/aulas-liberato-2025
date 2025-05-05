@@ -161,6 +161,43 @@ end;
 
 exec deletaProdutos(4);
 select * from Produto;
+
+7 - outro jeito
+--7. Faça uma procedure que delete os produtos. Passe como parâmetro o IdProduto.
+CREATE OR REPLACE PROCEDURE prc_deletaproduto(
+    param_prod IN NUMBER,
+    param_del OUT NUMBER
+)
+IS 
+BEGIN
+    -- Contar o número de produtos com o IdProduto especificado
+    SELECT COUNT(1) INTO param_del 
+    FROM Produto 
+    WHERE IdProduto = param_prod;
+
+    -- Se existir pelo menos um produto, deletar
+    IF param_del > 0 THEN
+        DELETE FROM Produto 
+        WHERE IdProduto = param_prod;
+
+        -- Retornar o número de produtos deletados
+        --param_del := 1; -- Assumindo que se deletou apenas um produto
+    --ELSE
+     --   param_del := 0; -- Nenhum produto encontrado para deletar
+    END IF;
+END;
+
+
+-- Bloco para executar a procedure e exibir o resultado
+DECLARE
+    v_del NUMBER(4) := -1;
+BEGIN
+    -- Chamar a procedure para deletar o produto com IdProduto igual a 4
+    prc_deletaproduto(4, v_del);
+    
+    -- Exibir o número de produtos deletados
+    DBMS_OUTPUT.PUT_LINE('Produtos deletados: ' || v_del);
+END;
  
 -- CRIAR tabela orçamento (esse orcamento aceita so um produto)
 --8) Faça uma função que retorna a descricao do orcamento, o valor do orcamento e a descricao do produto. Use cursor.

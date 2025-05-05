@@ -258,17 +258,16 @@ end;
 	begin 
 		declare v_IdProduto number(4);
 				v_Descricao varchar2(100);
+
+--executa procedure
 	begin
         nomeProduto(2, v_Descricao);
 		dbms_output.put_line(v_Descricao);
 	end;
 	end;
 
---- NAO FINALIZADA
-exec nomeProduto(1);
 
-
---deu certo
+--as duas deram certo
 10)
 --10. Faça uma procedeure que retorna o nome do produto. Passe como parâmetro o código do produto.
 

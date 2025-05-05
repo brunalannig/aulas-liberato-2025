@@ -190,13 +190,11 @@ SELECT fn_info_orcamento(2) from dual;
 
 --9) Faça uma função que retorne o produto com o maior orçamento.
 create or replace function maiorOrcamento
-return varchar2
+return number
 is
 	cursor c_maiorOrcamento is
-	select MAX(Orcamento.Valor) maior_valor, Produto.Descricao p_desc
-	from Orcamento, Produto
-	where Orcamento.IdProduto = Produto.IdProduto
-    group by maior_valor;
+	select MAX(Orcamento.Valor) maior_valor
+	from Orcamento;
 
 r_maiorOrcamento c_maiorOrcamento%rowtype;
 begin
@@ -206,11 +204,11 @@ begin
 		return('nao encontrou');
 	end if;
 	close c_maiorOrcamento;
-	return (r_maiorOrcamento.p_desc || '  ' || r_maiorOrcamento.maior_valor);
+	return (r_maiorOrcamento.maior_valor);
 end;
 
 SELECT maiorOrcamento() from dual;
---- NAO FINALIZADA
+--- nao está completamente certo.
 
 
 --10) Faça uma procedure que retorna o nome do produto, passe como parametro o Id do pr

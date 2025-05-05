@@ -282,11 +282,6 @@ BEGIN
     FROM Produto
     WHERE IdProduto = param_idProduto;
 
---EXCEPTION
-  --  WHEN NO_DATA_FOUND THEN
-    --    p_nomeProduto := 'Produto não encontrado';
-    --WHEN OTHERS THEN
-    --    p_nomeProduto := 'Erro ao buscar produto';
 END prc_obter_nome_produto;
 
 --Executar a procedure

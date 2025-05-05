@@ -208,6 +208,43 @@ end maiorOrcamento;
 
 select maiorOrcamento() as produtomaiororcamento from dual;
 
+--9) UTILIZANDO CURSOR
+
+CREATE OR REPLACE FUNCTION maiorOrcamento
+RETURN VARCHAR2
+IS
+    v_nomeProduto VARCHAR2(100);
+    v_maiorValor NUMBER;
+
+    CURSOR c_maiorOrcamento IS
+        SELECT IdProduto, Valor
+        FROM Orcamento
+        WHERE Valor = (SELECT MAX(Valor) FROM Orcamento);
+
+    v_idProduto NUMBER;
+
+BEGIN
+    OPEN c_maiorOrcamento;
+    FETCH c_maiorOrcamento INTO v_idProduto, v_maiorValor;
+
+    IF c_maiorOrcamento%NOTFOUND THEN
+        CLOSE c_maiorOrcamento;
+        RETURN 'Nenhum orçamento encontrado'; -- Mensagem se não houver orçamentos
+    END IF;
+
+    -- Busca o nome do produto associado ao IdProduto encontrado
+    SELECT Descricao
+    INTO v_nomeProduto
+    FROM Produto
+    WHERE IdProduto = v_idProduto;
+
+    CLOSE c_maiorOrcamento;
+    RETURN v_nomeProduto; -- Retorna o nome do produto associado ao maior orçamento
+
+END maiorOrcamento;
+    
+SELECT maiorOrcamento() AS NomeProdutoMaiorOrcamento FROM dual;
+
 
 --10) Faça uma procedure que retorna o nome do produto, passe como parametro o Id do pr
 create or replace procedure nomeProduto

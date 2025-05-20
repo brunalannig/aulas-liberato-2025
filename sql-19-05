@@ -1,0 +1,120 @@
+CREATE TABLE CIDADE
+   (    COD_CIDADE NUMBER(5,0),
+    NOME_CIDADE VARCHAR2(100 BYTE),
+    UF VARCHAR2(2 BYTE),
+    PAIS VARCHAR2(100 BYTE),
+     CONSTRAINT CIDADE_PK PRIMARY KEY (COD_CIDADE)
+   ) ;
+
+
+
+CREATE TABLE logCIDADE
+   (    COD_CIDADE NUMBER(5,0),
+    NOME_CIDADE VARCHAR2(100 BYTE),
+    UF VARCHAR2(2 BYTE),
+    PAIS VARCHAR2(100 BYTE),
+    usuario varchar2(30),
+    tpmov  varchar2(1),
+    datamov date);
+
+Insert into CIDADE (COD_CIDADE,NOME_CIDADE,UF,PAIS) values ('1','Campo Bom','RS','Brasil');
+Insert into CIDADE (COD_CIDADE,NOME_CIDADE,UF,PAIS) values ('2','São Leopoldo','RS','Brasil');
+Insert into CIDADE (COD_CIDADE,NOME_CIDADE,UF,PAIS) values ('3','São Paulo','SP','Brasil');
+
+-- Crie uma trigger que insira os dados na tabela logcidade de acordo com os movimentos DML (Data Manipulation Language) - insert, update, delete - na tabela cidade.
+CREATE OR REPLACE TRIGGER trg_logCIDADE
+AFTER INSERT OR UPDATE OR DELETE ON CIDADE
+FOR EACH ROW
+DECLARE
+    v_usuario VARCHAR2(30);
+BEGIN
+    -- Obtém o usuário atual
+    SELECT USER INTO v_usuario FROM DUAL;
+
+    -- Registra a operação de inserção
+    IF INSERTING THEN
+        INSERT INTO logCIDADE (COD_CIDADE, NOME_CIDADE, UF, PAIS, usuario, tpmov, datamov)
+        VALUES (:NEW.COD_CIDADE, :NEW.NOME_CIDADE, :NEW.UF, :NEW.PAIS, v_usuario, 'I', SYSDATE);
+    END IF;
+
+    -- Registra a operação de atualização
+    IF UPDATING THEN
+        INSERT INTO logCIDADE (COD_CIDADE, NOME_CIDADE, UF, PAIS, usuario, tpmov, datamov)
+        VALUES (:NEW.COD_CIDADE, :NEW.NOME_CIDADE, :NEW.UF, :NEW.PAIS, v_usuario, 'U', SYSDATE);
+    END IF;
+
+    -- Registra a operação de exclusão
+    IF DELETING THEN
+        INSERT INTO logCIDADE (COD_CIDADE, NOME_CIDADE, UF, PAIS, usuario, tpmov, datamov)
+        VALUES (:OLD.COD_CIDADE, :OLD.NOME_CIDADE, :OLD.UF, :OLD.PAIS, v_usuario, 'D', SYSDATE);
+    END IF;
+END;
+
+--INSERÇÃO (INSERT)
+INSERT INTO cidade VALUES ('4','Três Coroas','RS','Brasil');
+
+--INSERÇÃO (INSERT)
+INSERT INTO cidade VALUES ('5','Bom Princípio','RS','Brasil');
+
+--ATUALIZAÇÃO (UPDATE)
+UPDATE cidade
+SET NOME_CIDADE = 'Igrejinha'
+WHERE cod_CIDADE = 4 AND NOME_CIDADE = 'Três Coroas';
+
+--EXCLUSÃO (DELETE)
+DELETE FROM cidade
+WHERE cod_CIDADE = 5;
+
+SELECT * FROM logCIDADE;
+SELECT * FROM CIDADE;
+
+CREATE TABLE PESSOA
+   (    COD_PESSOA NUMBER(7,0),
+    NOME VARCHAR2(100 BYTE),
+    DATA_NASC DATE,
+    ENDERECO VARCHAR2(100 BYTE),
+    COD_CIDADE NUMBER(5,0),
+    ENDERECO_ENTREGA VARCHAR2(100 BYTE),
+    COD_CIDADE_ENTREGA NUMBER(5,0),
+    DATA_CADSATRO DATE,
+     CONSTRAINT PESSOA_PK PRIMARY KEY (COD_PESSOA),
+   CONSTRAINT PESSOA_CIDADE_FK FOREIGN KEY (COD_CIDADE)       REFERENCES CIDADE (COD_CIDADE) ENABLE,
+     CONSTRAINT PESSOA_CIDADE_ENTREGA_FK FOREIGN KEY (COD_CIDADE_ENTREGA)       REFERENCES CIDADE (COD_CIDADE)
+   ) ;
+
+CREATE TABLE logPESSOA
+   (    COD_PESSOA NUMBER(7,0),
+    NOME VARCHAR2(100 BYTE),
+    DATA_NASC DATE,
+    ENDERECO VARCHAR2(100 BYTE),
+    COD_CIDADE NUMBER(5,0),
+    NOME_CIDADE VARCHAR2(100 BYTE),
+    ENDERECO_ENTREGA VARCHAR2(100 BYTE),
+    COD_CIDADE_ENTREGA NUMBER(5,0),
+   NOME_CIDADE_ENTREGA  VARCHAR2(100 BYTE),
+    DATA_CADSATRO DATE,
+     usuario varchar2(30),
+    tpmov  varchar2(1),
+    datamov date);
+
+-- Na tabela log, foram adicionados o nome da cidade e o nome da cidade de entrega.
+-- Então, como exercício, usando um cursor busque o nome da cidade e coloque na logpessoa.nome_cidade.
+
+create or replace trigger cidades
+before insert or update or delete on CIDADE
+for each row
+    begin
+declare
+	v_COD_CIDADE CIDADE.COD_CIDADE%type;
+		cursor c_cidade_name is
+			select NOME_CIDADE from CIDADE
+			where COD_CIDADE = v_COD_CIDADE;
+r_cidade_name c_cidade_name%rowtype;
+begin
+    
+    IF INSERTING THEN
+        INSERT INTO logPESSOA VALUES (:NEW.COD_CIDADE ||' '|| :NEW.NOME_CIDADE, USER, 'I', SYSDATE);
+    END IF;
+END;
+
+--criar primeira parte igual exercicio 1 porem trocar dados para os dados da tabela pessoa e com cursor jogar informacoes para tabelalog pessoa.

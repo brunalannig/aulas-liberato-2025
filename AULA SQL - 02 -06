@@ -1,0 +1,196 @@
+Estoque
+
+PKIdEstoque
+PK IdProduto
+Quantidade
+*
+
+MovEstoque
+
+IdMovEstoque
+IdEstoque
+IdProduto
+QuantidadeMov
+TpMov
+*
+
+Produto
+
+PK IdProduto
+Descricao
+
+Cadastrar 5 produtos
+Pra cada produto cadastrar no estoque quantidade 0.
+	Estoque
+	1
+	1
+	1
+	1
+	1
+	Produto
+	10
+	20
+	30
+	40
+	Quantidade
+	0
+	0
+	0
+
+Criar na tabela MovEstoque uma trigger que a cada inserção aumenta o valor do estoque. Use o TpMov =’e’ OU I de insert
+
+CREATE TABLE ESTOQUE
+(ID_Estoque number(5),
+ID_Produto number(5),
+Quantidade number (12,2),
+Constraint Estoque_PK primary key (Id_Estoque, Id_Produto);
+
+Pk de uma coluna
+Nao repete o valor da coluna Ex: cidade
+Id_Cidade
+1
+2
+3
+4
+x 2
+
+Nome
+SP
+POA
+NH
+MACEIO
+x RJ
+
+
+Pk de 2 colunas
+Nao repete o par
+Linha dos pedido
+
+Pedido
+1
+1
+1
+2
+3
+3
+x 3
+
+Produto
+10
+20
+10
+20
+30
+x 20
+
+Altere a trigger quando o TP_MOV=’S’ (saída), a quantidade do estoque deve diminuir.
+
+Na tabela MovEstoque nao pode ocorrer update ou delete.
+
+
+View (visualização)
+As view funcionam como visualizacao de diversas tabelas. 
+Por exemplo: um select que é utilizado muitas vezes, pode ser tranformado em uma view.
+
+CREATE VIEW v_estoque_prod AS
+SELECT ESTOQUE.id_estoque,
+ESTOQUE.id_prdouto,
+Produto.Descricao,
+Estoque.Quantidade
+FROM ESTOQUE, PRODUTO
+where Estoque.id_produto = Produto.id_produto;
+
+
+CREATE TABLE ESTOQUE
+(ID_Estoque number(5),
+ID_Produto number(5),
+Quantidade number (12,2),
+Constraint Estoque_PK primary key (ID_Estoque, ID_Produto),
+CONSTRAINT ESTOQUE_PRODUTO_FK FOREIGN KEY (ID_Produto) REFERENCES Produto (idProduto));  
+
+CREATE TABLE MovEstoque
+(IdMovEstoque number(5),
+IdEstoque number(5),
+IdProduto number(5),
+QuantidadeMov number (12,2),
+TpMov varchar2(1),
+Constraint MovEstoque_PK primary key (IdMovEstoque),
+CONSTRAINT MOVESTOQUE_ESTOQUE_FK FOREIGN KEY (IdEstoque, IdProduto) REFERENCES ESTOQUE (ID_Estoque, ID_Produto),
+CONSTRAINT MOVESTOQUE_PRODUTO_FK FOREIGN KEY (IdProduto) REFERENCES Produto (idProduto));
+
+CREATE TABLE Produto
+(idProduto number(5),
+Descricao varchar2(100),
+Constraint Produto_PK primary key (idProduto));
+
+--1. Cadastrar 5 produtos
+INSERT INTO Produto VALUES (1,'Blusa');
+INSERT INTO Produto VALUES (2,'Caminhao');
+INSERT INTO Produto VALUES (3,'Lapis');
+INSERT INTO Produto VALUES (4,'Banana');
+INSERT INTO Produto VALUES (5,'Macarrao');
+select * from Produto;
+
+--2. Pra cada produto cadastrar no estoque quantidade 0.
+INSERT INTO ESTOQUE VALUES (1,5,0);
+INSERT INTO ESTOQUE VALUES (1,4,0);
+INSERT INTO ESTOQUE VALUES (1,3,0);
+INSERT INTO ESTOQUE VALUES (1,2,0);
+INSERT INTO ESTOQUE VALUES (1,1,0);
+
+--3. Criar na tabela MovEstoque uma trigger que a cada inserção aumenta o valor do estoque. Use o TpMov =’E’.
+CREATE OR REPLACE TRIGGER trg_movestoque_insert
+AFTER INSERT ON MovEstoque
+FOR EACH ROW
+BEGIN
+    -- Se for uma entrada (TpMov = 'E'), atualiza o estoque
+    IF :NEW.TpMov = 'E' THEN
+        UPDATE ESTOQUE
+        SET Quantidade = NVL(Quantidade, 0) + :NEW.QuantidadeMov
+        WHERE ID_Estoque = :NEW.IdEstoque
+          AND ID_Produto = :NEW.IdProduto;
+    END IF;
+END;
+
+--colocar novos valores
+INSERT INTO MovEstoque VALUES (1, 1, 2, 5, 'E');
+select * from MovEstoque;
+select * from estoque;
+
+--4. Altere a trigger quando o TP_MOV=’S’ (saída), a quantidade do estoque deve diminuir.
+
+CREATE OR REPLACE TRIGGER trg_movestoque_insert
+AFTER INSERT ON MovEstoque
+FOR EACH ROW
+BEGIN
+    -- Se for uma entrada (TpMov = 'E'), aumenta a quantidade no estoque
+    IF :NEW.TpMov = 'E' THEN
+        UPDATE ESTOQUE
+        SET Quantidade = NVL(Quantidade, 0) + :NEW.QuantidadeMov
+        WHERE ID_Estoque = :NEW.IdEstoque
+          AND ID_Produto = :NEW.IdProduto;
+
+    -- Se for uma saída (TpMov = 'S'), diminui a quantidade no estoque
+    ELSIF :NEW.TpMov = 'S' THEN
+        UPDATE ESTOQUE
+        SET Quantidade = NVL(Quantidade, 0) - :NEW.QuantidadeMov
+        WHERE ID_Estoque = :NEW.IdEstoque
+          AND ID_Produto = :NEW.IdProduto;
+    END IF;
+END;
+
+--colocar novos valores
+INSERT INTO MovEstoque VALUES (2, 1, 2, 3, 'S');
+select * from MovEstoque;
+select * from estoque;
+
+INSERT INTO MovEstoque VALUES (3, 1, 5, 20, 'E');
+INSERT INTO MovEstoque VALUES (4, 1, 5, 5, 'S');
+
+CREATE VIEW v_estoque_prod AS
+SELECT ESTOQUE.ID_Estoque,
+ESTOQUE.ID_Produto,
+Produto.Descricao,
+Estoque.Quantidade
+FROM ESTOQUE, Produto
+where Estoque.ID_Produto = Produto.idProduto;

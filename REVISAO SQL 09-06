@@ -1,0 +1,196 @@
+-- 1 EXERCICIO
+CREATE TABLE PESSOA
+   (ID_PESSOA NUMBER(7),
+    NOME VARCHAR2(100),
+    ID_ESTADO_CIVIL NUMBER(7),
+    ID_TIPO_PESSOA NUMBER(7),
+    CONSTRAINT PESSOA_PK PRIMARY KEY (ID_PESSOA),
+   	CONSTRAINT PESSOA_ESTADOCIVIL_FK FOREIGN KEY (ID_ESTADO_CIVIL) REFERENCES ESTADOCIVIL (ID_ESTADO_CIVIL),
+    CONSTRAINT PESSOA_TIPOPESSOA_FK FOREIGN KEY (ID_TIPO_PESSOA) REFERENCES TIPOPESSOA (ID_TIPO_PESSOA)
+   );
+
+
+CREATE TABLE ESTADOCIVIL
+   (ID_ESTADO_CIVIL NUMBER(7),
+    DESCRICAO VARCHAR2(100),
+    CONSTRAINT ESTADO_CIVIL_PK PRIMARY KEY (ID_ESTADO_CIVIL)
+   );
+INSERT INTO ESTADOCIVIL VALUES (1, 'Solteiro');
+INSERT INTO ESTADOCIVIL VALUES (2, 'Casado');
+
+CREATE TABLE TIPOPESSOA
+   (ID_TIPO_PESSOA NUMBER(7),
+    DESCRICAO VARCHAR2(100),
+    CONSTRAINT TIPO_PESSOA_PK PRIMARY KEY (ID_TIPO_PESSOA)
+   );
+INSERT INTO TIPOPESSOA VALUES (1, 'Fisica');
+INSERT INTO TIPOPESSOA VALUES (2, 'Juridica');
+
+CREATE TABLE logPESSOA
+   (ID_PESSOA NUMBER(7),
+    NOME VARCHAR2(100),
+    ID_ESTADO_CIVIL NUMBER(5),
+    DESCRICAO_ESTADO_CIVIL VARCHAR2(100),
+    ID_TIPO_PESSOA NUMBER(5),
+    DESCRICAO_TIPO_PESSOA VARCHAR2(100),
+    usuario varchar2(30),
+    tpmov  varchar2(1),
+    datamov date);
+
+--1. Tudo que for movimentado na tabela pessoa tem q ter uma trigger que vai na log pessoa.
+CREATE OR REPLACE TRIGGER trg_logpessoa
+AFTER INSERT OR UPDATE OR DELETE ON PESSOA
+FOR EACH ROW
+DECLARE v_usuario VARCHAR2(30);
+BEGIN
+    --obtem o usuario atual
+    SELECT USER INTO v_usuario FROM DUAL;
+
+	--registra a operacao de insercao
+	IF INSERTING THEN
+    INSERT INTO logPESSOA (ID_PESSOA, NOME, ID_ESTADO_CIVIL, ID_TIPO_PESSOA, usuario, tpmov, datamov)
+    VALUES (:NEW.ID_PESSOA, :NEW.NOME, :NEW.ID_ESTADO_CIVIL, :NEW.ID_TIPO_PESSOA, v_usuario, 'I', SYSDATE);
+    END IF;
+
+	--registra operacao de atualizacao
+	IF UPDATING THEN
+    INSERT INTO logPESSOA (ID_PESSOA, NOME, ID_ESTADO_CIVIL, ID_TIPO_PESSOA, usuario, tpmov, datamov)
+    VALUES (:NEW.ID_PESSOA, :NEW.NOME, :NEW.ID_ESTADO_CIVIL, :NEW.ID_TIPO_PESSOA, v_usuario, 'U', SYSDATE);
+    END IF;
+
+	--registra operacao de exclusao
+	IF DELETING THEN
+    INSERT INTO logPESSOA (ID_PESSOA, NOME, ID_ESTADO_CIVIL, ID_TIPO_PESSOA,usuario, tpmov, datamov)
+    VALUES (:OLD.ID_PESSOA, :OLD.NOME, :OLD.ID_ESTADO_CIVIL, :OLD.ID_TIPO_PESSOA, v_usuario, 'D', SYSDATE);
+    END IF;
+END;
+--obs: criar cursor pra pegar a DESCRICAO_ESTADO_CIVIL e DESCRICAO_TIPO_PESSOA.
+
+--COLOCANDO VALORES
+INSERT INTO PESSOA VALUES (1, 'Paula', 1, 2);
+INSERT INTO PESSOA VALUES (2, 'Feijao', 1, 2);
+
+UPDATE PESSOA
+SET NOME = 'Felipe'
+WHERE ID_PESSOA = 2 AND NOME = 'Feijao';
+
+DELETE FROM PESSOA
+WHERE cod_CIDADE = 5;
+
+SELECT * FROM logPESSOA;
+SELECT * FROM PESSOA;
+
+
+-- 2 EXERCICIO
+CREATE TABLE COMISSAO
+   (ID_VENDEDOR NUMBER(7),
+    MES_ANO VARCHAR2(10),
+    TOTAL NUMBER(12,2)
+    );
+
+CREATE TABLE MOVCOMISSAO
+   (ID_VENDEDOR NUMBER(7),
+    MES_ANO VARCHAR2(10),
+    VALOR_COMISSAO NUMBER(12,2)
+   );
+
+-- 2. Para cada valor inserido na MovComissao, o campo total na tabela comissao deve ser atualizado. Na tabela MovComissao nao pode haver update e delete.
+CREATE OR REPLACE TRIGGER trg_movcomissao_insert
+AFTER INSERT ON MOVCOMISSAO
+FOR EACH ROW
+BEGIN
+    IF UPDATING OR DELETING THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Operações de UPDATE e DELETE não são permitidas na tabela MOVCOMISSAO.');
+    END IF;
+
+-- Se for INSERT, atualiza ou insere na tabela COMISSAO
+
+    IF INSERTING THEN
+	  UPDATE COMISSAO
+		SET TOTAL = TOTAL + :NEW.VALOR_COMISSAO
+		WHERE ID_VENDEDOR = :NEW.ID_VENDEDOR
+		AND MES_ANO = :NEW.MES_ANO;
+
+IF SQL%ROWCOUNT = 0 THEN
+            INSERT INTO COMISSAO (ID_VENDEDOR, MES_ANO, TOTAL)
+            VALUES (:NEW.ID_VENDEDOR, :NEW.MES_ANO, :NEW.VALOR_COMISSAO);
+        END IF;
+    END IF;
+END;
+
+--colocar novos valores
+INSERT INTO MOVCOMISSAO VALUES (1, '12/2024', 100.90);
+select * from MOVCOMISSAO;
+select * from COMISSAO;
+
+INSERT INTO MOVCOMISSAO VALUES (2, '12/2024', 100.90);
+INSERT INTO MOVCOMISSAO VALUES (1, '12/2024', 48.60);
+
+-- 3. Criar uma View com as seguintes informacoes: IdPessoa, nomePessoa, IdTipoPessoa, DescricaoTipoPessoa, IdEstadoCivil e DescricaoEstadoCivil
+
+
+CREATE OR REPLACE VIEW v_pessoa AS
+SELECT PESSOA.ID_PESSOA,
+    PESSOA.NOME,
+    PESSOA.ID_TIPO_PESSOA,
+    TIPOPESSOA.DESCRICAO,
+    PESSOA.ID_ESTADO_CIVIL,
+    ESTADOCIVIL.DESCRICAO DESCRESTCIVIL --apelido 'DESCRESTCIVIL'
+    FROM PESSOA, TIPOPESSOA, ESTADOCIVIL
+    WHERE PESSOA.ID_ESTADO_CIVIL = ESTADOCIVIL.ID_ESTADO_CIVIL
+    AND PESSOA.ID_TIPO_PESSOA = TIPOPESSOA.ID_TIPO_PESSOA;
+
+SELECT * FROM v_pessoa;
+
+--Exercicio 1 CORRIGIDO
+CREATE OR REPLACE TRIGGER trg_logpessoa
+AFTER INSERT OR UPDATE OR DELETE ON PESSOA
+FOR EACH ROW
+DECLARE
+    v_usuario VARCHAR2(30);
+    v_desc_estado_civil VARCHAR2(100);
+    v_desc_tipo_pessoa VARCHAR2(100);
+    
+    CURSOR cur_estado_civil IS
+        SELECT DESCRICAO
+        FROM ESTADOCIVIL
+        WHERE ID_ESTADO_CIVIL = :NEW.ID_ESTADO_CIVIL;
+
+    CURSOR cur_tipo_pessoa IS
+        SELECT DESCRICAO
+        FROM TIPOPESSOA
+        WHERE ID_TIPO_PESSOA = :NEW.ID_TIPO_PESSOA;
+
+BEGIN
+    -- Obtém o usuário atual
+    SELECT USER INTO v_usuario FROM DUAL;
+
+    -- Obtem a descrição do estado civil
+    OPEN cur_estado_civil;
+    FETCH cur_estado_civil INTO v_desc_estado_civil;
+    CLOSE cur_estado_civil;
+
+    -- Obtem a descrição do tipo de pessoa
+    OPEN cur_tipo_pessoa;
+    FETCH cur_tipo_pessoa INTO v_desc_tipo_pessoa;
+    CLOSE cur_tipo_pessoa;
+
+    -- Registra a operação de inserção
+    IF INSERTING THEN
+        INSERT INTO logPESSOA (ID_PESSOA, NOME, ID_ESTADO_CIVIL, DESCRICAO_ESTADO_CIVIL, ID_TIPO_PESSOA, DESCRICAO_TIPO_PESSOA, usuario, tpmov, datamov)
+        VALUES (:NEW.ID_PESSOA, :NEW.NOME, :NEW.ID_ESTADO_CIVIL, v_desc_estado_civil, :NEW.ID_TIPO_PESSOA, v_desc_tipo_pessoa, v_usuario, 'I', SYSDATE);
+    END IF;
+
+    -- Registra a operação de atualização
+    IF UPDATING THEN
+        INSERT INTO logPESSOA (ID_PESSOA, NOME, ID_ESTADO_CIVIL, DESCRICAO_ESTADO_CIVIL, ID_TIPO_PESSOA, DESCRICAO_TIPO_PESSOA, usuario, tpmov, datamov)
+        VALUES (:NEW.ID_PESSOA, :NEW.NOME, :NEW.ID_ESTADO_CIVIL, v_desc_estado_civil, :NEW.ID_TIPO_PESSOA, v_desc_tipo_pessoa, v_usuario, 'U', SYSDATE);
+    END IF;
+
+    -- Registra a operação de exclusão
+    IF DELETING THEN
+        INSERT INTO logPESSOA (ID_PESSOA, NOME, ID_ESTADO_CIVIL, DESCRICAO_ESTADO_CIVIL, ID_TIPO_PESSOA, DESCRICAO_TIPO_PESSOA, usuario, tpmov, datamov)
+        VALUES (:OLD.ID_PESSOA, :OLD.NOME, :OLD.ID_ESTADO_CIVIL, v_desc_estado_civil, :OLD.ID_TIPO_PESSOA, v_desc_tipo_pessoa, v_usuario, 'D', SYSDATE);
+    END IF;
+
+END;
